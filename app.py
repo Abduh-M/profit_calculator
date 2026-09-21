@@ -15,12 +15,15 @@ def format_number(value):
 col1, col2 = st.columns(2)
 
 with col1:
-    purchase_price = st.number_input("Buy Price ($)", step=0.01, min_value=0.0)
+    purchase_price_input = st.text_input("Buy Price ($)", placeholder="0.00")
+    purchase_price = float(purchase_price_input) if purchase_price_input else 0.0
     
 with col2:
-    sell_price = st.number_input("Sell Price ($)", step=0.01, min_value=0.0)
+    sell_price_input = st.text_input("Sell Price ($)", placeholder="0.00")
+    sell_price = float(sell_price_input) if sell_price_input else 0.0
 
-investment_value = st.number_input("Investment ($)", step=100.0, min_value=0.0)
+investment_input = st.text_input("Investment ($)", placeholder="0.00")
+investment_value = float(investment_input) if investment_input else 0.0
 
 # Fixed cost per share
 cost_per_share = 0.005
