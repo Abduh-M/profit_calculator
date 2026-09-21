@@ -4,6 +4,13 @@ st.set_page_config(page_title="Stock Profit Calculator", layout="centered")
 
 st.title("📈 Stock Profit Calculator")
 
+# Smart formatter - removes .00 but keeps decimals if they exist
+def format_currency(value):
+    return f"${value:,.2f}".rstrip('0').rstrip('.')
+
+def format_number(value):
+    return f"{value:,.2f}".rstrip('0').rstrip('.')
+
 # Input fields
 col1, col2 = st.columns(2)
 
@@ -33,26 +40,26 @@ if st.button("Calculate Profit", use_container_width=True):
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Shares", f"{num_shares:,.2f}")
+        st.metric("Shares", format_number(num_shares))
     with col2:
-        st.metric("Buy Value", f"${buy_value:,.2f}")
+        st.metric("Buy Value", format_currency(buy_value))
     with col3:
-        st.metric("Sell Value", f"${sell_value:,.2f}")
+        st.metric("Sell Value", format_currency(sell_value))
     
     st.divider()
     
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Transaction Cost", f"${total_cost:,.2f}")
+        st.metric("Transaction Cost", format_currency(total_cost))
     with col2:
-        st.metric("Gross Profit", f"${gross_profit:,.2f}")
+        st.metric("Gross Profit", format_currency(gross_profit))
     
     st.divider()
     
     # Net profit with color
     if net_profit > 0:
-        st.success(f"✓ NET PROFIT: ${net_profit:,.2f} ({profit_percent:.2f}%)", icon="✓")
+        st.success(f"✓ NET PROFIT: {format_currency(net_profit)} ({profit_percent:.2f}%)")
     elif net_profit < 0:
-        st.error(f"✗ LOSS: -${abs(net_profit):,.2f} ({profit_percent:.2f}%)", icon="✗")
+        st.error(f"✗ LOSS: -{format_currency(abs(net_profit))} ({profit_percent:.2f}%)")
     else:
-        st.info("~ BREAK EVEN", icon="~")
+        st.info("~ BREAK EVEN")
