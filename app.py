@@ -15,7 +15,8 @@ with col2:
 
 investment_value = st.number_input("Investment ($)", value=3000.0, step=100.0, min_value=0.0)
 
-cost_per_share = st.number_input("Cost Per Share ($)", value=0.005, step=0.001, min_value=0.0)
+# Fixed cost per share
+cost_per_share = 0.005
 
 # Calculate
 if st.button("Calculate Profit", use_container_width=True):
