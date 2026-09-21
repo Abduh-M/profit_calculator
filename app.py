@@ -15,14 +15,14 @@ def format_number(value):
 col1, col2 = st.columns(2)
 
 with col1:
-    purchase_price_input = st.text_input("Buy Price ($)", placeholder="0.00")
+    purchase_price_input = st.text_input("Buy Price ($)", "")
     purchase_price = float(purchase_price_input) if purchase_price_input else 0.0
     
 with col2:
-    sell_price_input = st.text_input("Sell Price ($)", placeholder="0.00")
+    sell_price_input = st.text_input("Sell Price ($)", "")
     sell_price = float(sell_price_input) if sell_price_input else 0.0
 
-investment_input = st.text_input("Investment ($)", placeholder="0.00")
+investment_input = st.text_input("Investment ($)", "")
 investment_value = float(investment_input) if investment_input else 0.0
 
 # Fixed cost per share
@@ -33,7 +33,11 @@ if st.button("Calculate Profit", use_container_width=True):
     num_shares = investment_value / purchase_price if purchase_price > 0 else 0
     buy_value = num_shares * purchase_price
     sell_value = num_shares * sell_price
-    total_cost = num_shares * cost_per_share
+    
+    # Transaction cost with $1 minimum
+    calculated_cost = num_shares * cost_per_share
+    total_cost = max(1.0, calculated_cost)
+    
     gross_profit = sell_value - buy_value
     net_profit = gross_profit - total_cost
     profit_percent = (net_profit / buy_value * 100) if buy_value > 0 else 0
