@@ -181,6 +181,10 @@ if st.button(
     use_container_width=True
 ):
 
+    # ---------------------------------------------
+    # VALIDATION
+    # ---------------------------------------------
+
     if purchase_price <= 0:
         st.error("Buy price must be greater than 0.")
         st.stop()
@@ -202,7 +206,9 @@ if st.button(
     # NUMBER OF SHARES
     # =================================================
 
-    estimated_shares = cash_budget / purchase_price
+    estimated_shares = (
+        cash_budget / purchase_price
+    )
 
     estimated_fee = transaction_fee(
         estimated_shares
@@ -212,20 +218,25 @@ if st.button(
         cash_budget - estimated_fee
     ) / purchase_price
 
-    # Always round DOWN
+    # Round DOWN to whole shares
     num_shares = math.floor(num_shares)
 
+    # Exact buy fee
     buy_fee = transaction_fee(
         num_shares
     )
 
-    # Safety check
+    # Safety check:
+    # make sure shares + fee do not exceed budget
     while (
-        num_shares * purchase_price + buy_fee
-        > cash_budget
-        and num_shares > 0
+        num_shares > 0
+        and (
+            num_shares * purchase_price
+            + buy_fee
+        ) > cash_budget
     ):
         num_shares -= 1
+
         buy_fee = transaction_fee(
             num_shares
         )
@@ -272,7 +283,7 @@ if st.button(
 
 
     # =================================================
-    # STOP LOSS SCENARIO
+    # STOP SCENARIO
     # =================================================
 
     stop_sell_value = (
@@ -295,7 +306,7 @@ if st.button(
 
 
     # =================================================
-    # OTHER CALCULATIONS
+    # ADDITIONAL CALCULATIONS
     # =================================================
 
     target_total_fees = (
@@ -320,7 +331,6 @@ if st.button(
 
     st.divider()
 
-    # Shares first
     st.metric(
         "📦 SHARES YOU CAN BUY",
         f"{num_shares:,}"
@@ -328,113 +338,133 @@ if st.button(
 
     st.divider()
 
-# =================================================
-# PROFIT / LOSS
-# =================================================
 
-col1, col2 = st.columns(2)
+    # =================================================
+    # TARGET + STOP RESULTS
+    # =================================================
 
-# TARGET
-with col1:
-
-    if target_net_profit >= 0:
-        target_color = "#00c853"
-        target_amount = f"+{format_currency(target_net_profit)}"
-    else:
-        target_color = "#ff4b4b"
-        target_amount = f"-{format_currency(abs(target_net_profit))}"
-
-    st.markdown(
-        f"""
-        <div style="margin:0; padding:0;">
-            <div style="
-                font-size:18px;
-                font-weight:700;
-                margin:0;
-                padding:0;
-                line-height:1.1;
-            ">
-                🎯 TARGET HIT
-            </div>
-
-            <div style="
-                color:{target_color};
-                font-size:32px;
-                font-weight:700;
-                margin:2px 0 0 0;
-                padding:0;
-                line-height:1.1;
-            ">
-                {target_amount}
-            </div>
-
-            <div style="
-                font-size:13px;
-                opacity:0.7;
-                margin-top:4px;
-            ">
-                Sell at ${sell_price:,.2f}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    col1, col2 = st.columns(2)
 
 
-# STOP
-with col2:
+    # ---------------------------------------------
+    # TARGET
+    # ---------------------------------------------
 
-    if stop_net_result < 0:
-        stop_color = "#ff4b4b"
-        stop_amount = f"-{format_currency(abs(stop_net_result))}"
-    else:
-        stop_color = "#00c853"
-        stop_amount = f"+{format_currency(stop_net_result)}"
+    with col1:
 
-    st.markdown(
-        f"""
-        <div style="margin:0; padding:0;">
-            <div style="
-                font-size:18px;
-                font-weight:700;
-                margin:0;
-                padding:0;
-                line-height:1.1;
-            ">
-                🛑 STOP HIT
-            </div>
+        if target_net_profit >= 0:
+            target_color = "#00c853"
+            target_amount = (
+                f"+{format_currency(target_net_profit)}"
+            )
+        else:
+            target_color = "#ff4b4b"
+            target_amount = (
+                f"-{format_currency(abs(target_net_profit))}"
+            )
 
-            <div style="
-                color:{stop_color};
-                font-size:32px;
-                font-weight:700;
-                margin:2px 0 0 0;
-                padding:0;
-                line-height:1.1;
-            ">
-                {stop_amount}
-            </div>
+        st.markdown(
+            f"""
+<div style="margin:0; padding:0;">
+    <div style="
+        font-size:18px;
+        font-weight:700;
+        margin:0;
+        padding:0;
+        line-height:1.05;
+    ">
+        🎯 TARGET HIT
+    </div>
 
-            <div style="
-                font-size:13px;
-                opacity:0.7;
-                margin-top:4px;
-            ">
-                Sell at ${stop_price:,.2f}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    <div style="
+        color:{target_color};
+        font-size:32px;
+        font-weight:700;
+        margin:0;
+        padding:0;
+        line-height:1.05;
+    ">
+        {target_amount}
+    </div>
+
+    <div style="
+        font-size:13px;
+        opacity:0.7;
+        margin-top:3px;
+    ">
+        Sell at ${sell_price:,.2f}
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+    # ---------------------------------------------
+    # STOP
+    # ---------------------------------------------
+
+    with col2:
+
+        if stop_net_result < 0:
+            stop_color = "#ff4b4b"
+            stop_amount = (
+                f"-{format_currency(abs(stop_net_result))}"
+            )
+        else:
+            stop_color = "#00c853"
+            stop_amount = (
+                f"+{format_currency(stop_net_result)}"
+            )
+
+        st.markdown(
+            f"""
+<div style="margin:0; padding:0;">
+    <div style="
+        font-size:18px;
+        font-weight:700;
+        margin:0;
+        padding:0;
+        line-height:1.05;
+    ">
+        🛑 STOP HIT
+    </div>
+
+    <div style="
+        color:{stop_color};
+        font-size:32px;
+        font-weight:700;
+        margin:0;
+        padding:0;
+        line-height:1.05;
+    ">
+        {stop_amount}
+    </div>
+
+    <div style="
+        font-size:13px;
+        opacity:0.7;
+        margin-top:3px;
+    ">
+        Sell at ${stop_price:,.2f}
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
 
 
     # =================================================
-    # DETAILS
+    # FULL DETAILS
     # =================================================
 
     st.divider()
 
     with st.expander("Show Full Trade Details"):
+
+        # ---------------------------------------------
+        # BUY
+        # ---------------------------------------------
 
         st.subheader("Buy")
 
@@ -464,9 +494,9 @@ with col2:
         )
 
 
-        # =============================================
-        # TARGET DETAILS
-        # =============================================
+        # ---------------------------------------------
+        # TARGET
+        # ---------------------------------------------
 
         st.subheader("🎯 Target Scenario")
 
@@ -491,9 +521,9 @@ with col2:
             )
 
 
-        # =============================================
-        # STOP DETAILS
-        # =============================================
+        # ---------------------------------------------
+        # STOP
+        # ---------------------------------------------
 
         st.subheader("🛑 Stop Scenario")
 
@@ -518,9 +548,9 @@ with col2:
             )
 
 
-        # =============================================
-        # BREAK EVEN
-        # =============================================
+        # ---------------------------------------------
+        # OTHER
+        # ---------------------------------------------
 
         st.subheader("Other")
 
