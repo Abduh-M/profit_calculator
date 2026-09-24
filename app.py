@@ -657,6 +657,40 @@ st.title("Stock Profit Calculator")
 
 
 # =================================================
+# SESSION STATE
+# =================================================
+
+# Initialize inputs
+if "buy_price" not in st.session_state:
+    st.session_state.buy_price = ""
+
+if "target_price" not in st.session_state:
+    st.session_state.target_price = ""
+
+if "stop_price" not in st.session_state:
+    st.session_state.stop_price = ""
+
+if "cash_budget" not in st.session_state:
+    st.session_state.cash_budget = ""
+
+# Controls whether results are displayed
+if "show_results" not in st.session_state:
+    st.session_state.show_results = False
+
+
+# =================================================
+# CLEAR FUNCTION
+# =================================================
+
+def clear_inputs():
+    st.session_state.buy_price = ""
+    st.session_state.target_price = ""
+    st.session_state.stop_price = ""
+    st.session_state.cash_budget = ""
+    st.session_state.show_results = False
+
+
+# =================================================
 # CSS
 # =================================================
 
@@ -721,67 +755,6 @@ def format_currency(value):
 
 
 # =================================================
-# INPUTS
-# =================================================
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    purchase_price_input = st.text_input(
-        "Buy Price ($)",
-        ""
-    )
-
-with col2:
-    sell_price_input = st.text_input(
-        "Target Price ($)",
-        ""
-    )
-
-with col3:
-    stop_price_input = st.text_input(
-        "Stop Price ($)",
-        ""
-    )
-
-investment_input = st.text_input(
-    "Total Cash Budget ($)",
-    "",
-    help="Maximum cash you want to use, including the buy fee."
-)
-
-
-# =================================================
-# CONVERT INPUTS
-# =================================================
-
-try:
-    purchase_price = (
-        float(purchase_price_input)
-        if purchase_price_input else 0.0
-    )
-
-    sell_price = (
-        float(sell_price_input)
-        if sell_price_input else 0.0
-    )
-
-    stop_price = (
-        float(stop_price_input)
-        if stop_price_input else 0.0
-    )
-
-    cash_budget = (
-        float(investment_input)
-        if investment_input else 0.0
-    )
-
-except ValueError:
-    st.error("Please enter valid numbers.")
-    st.stop()
-
-
-# =================================================
 # BROKER FEES
 # =================================================
 
@@ -797,15 +770,95 @@ def transaction_fee(shares):
 
 
 # =================================================
+# INPUTS
+# =================================================
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.text_input(
+        "Buy Price ($)",
+        key="buy_price"
+    )
+
+with col2:
+    st.text_input(
+        "Target Price ($)",
+        key="target_price"
+    )
+
+with col3:
+    st.text_input(
+        "Stop Price ($)",
+        key="stop_price"
+    )
+
+st.text_input(
+    "Total Cash Budget ($)",
+    key="cash_budget",
+    help="Maximum cash you want to use, including the buy fee."
+)
+
+
+# =================================================
+# BUTTONS
+# =================================================
+
+calculate_clicked = st.button(
+    "Calculate Trade",
+    use_container_width=True,
+    type="primary"
+)
+
+st.button(
+    "Clear Inputs",
+    use_container_width=True,
+    type="secondary",
+    on_click=clear_inputs
+)
+
+
+# =================================================
 # CALCULATE
 # =================================================
 
-if st.button(
-    "Calculate Trade",
-    use_container_width=True
-):
+if calculate_clicked:
 
-    # Validation
+    # Convert inputs
+    try:
+        purchase_price = (
+            float(st.session_state.buy_price)
+            if st.session_state.buy_price
+            else 0.0
+        )
+
+        sell_price = (
+            float(st.session_state.target_price)
+            if st.session_state.target_price
+            else 0.0
+        )
+
+        stop_price = (
+            float(st.session_state.stop_price)
+            if st.session_state.stop_price
+            else 0.0
+        )
+
+        cash_budget = (
+            float(st.session_state.cash_budget)
+            if st.session_state.cash_budget
+            else 0.0
+        )
+
+    except ValueError:
+        st.error("Please enter valid numbers.")
+        st.stop()
+
+
+    # =================================================
+    # VALIDATION
+    # =================================================
+
     if purchase_price <= 0:
         st.error("Buy price must be greater than 0.")
         st.stop()
@@ -846,7 +899,8 @@ if st.button(
         num_shares
     )
 
-    # Make sure shares + fee do not exceed budget
+    # Make sure shares + buy fee
+    # never exceed the cash budget
     while (
         num_shares > 0
         and (
@@ -918,7 +972,33 @@ if st.button(
 
 
     # =================================================
-    # RESULTS
+    # SAVE RESULTS
+    # =================================================
+
+    st.session_state.num_shares = num_shares
+    st.session_state.target_net_profit = target_net_profit
+    st.session_state.stop_net_result = stop_net_result
+    st.session_state.sell_price_result = sell_price
+    st.session_state.stop_price_result = stop_price
+
+    st.session_state.show_results = True
+
+
+# =================================================
+# DISPLAY RESULTS
+# =================================================
+
+if st.session_state.show_results:
+
+    num_shares = st.session_state.num_shares
+    target_net_profit = st.session_state.target_net_profit
+    stop_net_result = st.session_state.stop_net_result
+    sell_price = st.session_state.sell_price_result
+    stop_price = st.session_state.stop_price_result
+
+
+    # =================================================
+    # SHARES
     # =================================================
 
     st.divider()
@@ -933,22 +1013,29 @@ if st.button(
 
     st.divider()
 
+
+    # =================================================
+    # TARGET + STOP
+    # =================================================
+
     col1, col2 = st.columns(2)
 
 
-    # =================================================
     # TARGET
-    # =================================================
-
     with col1:
 
         if target_net_profit >= 0:
+
             target_class = "target-number"
+
             target_text = (
                 f"+{format_currency(target_net_profit)}"
             )
+
         else:
+
             target_class = "stop-number"
+
             target_text = (
                 f"-{format_currency(abs(target_net_profit))}"
             )
@@ -965,19 +1052,21 @@ if st.button(
         )
 
 
-    # =================================================
     # STOP
-    # =================================================
-
     with col2:
 
         if stop_net_result < 0:
+
             stop_class = "stop-number"
+
             stop_text = (
                 f"-{format_currency(abs(stop_net_result))}"
             )
+
         else:
+
             stop_class = "target-number"
+
             stop_text = (
                 f"+{format_currency(stop_net_result)}"
             )
