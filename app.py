@@ -85,6 +85,52 @@ st.title("📈 Stock Profit Calculator")
 
 
 # =================================================
+# CSS
+# =================================================
+
+st.markdown("""
+<style>
+
+/* Target profit number */
+.target-number {
+    color: #00c853;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
+
+/* Stop loss number */
+.stop-number {
+    color: #ff4b4b;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
+
+/* Result heading */
+.result-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 2px 0;
+    padding: 0;
+}
+
+/* Sell price */
+.sell-price {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# =================================================
 # FORMATTING
 # =================================================
 
@@ -212,7 +258,7 @@ if st.button(
         cash_budget - estimated_fee
     ) / purchase_price
 
-    # Whole shares only
+    # Whole shares only - always round DOWN
     num_shares = math.floor(num_shares)
 
     buy_fee = transaction_fee(
@@ -222,8 +268,7 @@ if st.button(
     # Safety check
     while (
         num_shares > 0
-        and
-        (
+        and (
             num_shares * purchase_price
             + buy_fee
         ) > cash_budget
@@ -325,13 +370,13 @@ if st.button(
 
 
     # =================================================
-    # MAIN RESULTS
+    # MAIN RESULT - SHARES
     # =================================================
 
     st.divider()
 
     st.metric(
-        " SHARES YOU CAN BUY",
+        "Number of Shares",
         f"{num_shares:,}"
     )
 
@@ -344,45 +389,56 @@ if st.button(
 
     col1, col2 = st.columns(2)
 
+
+    # TARGET
     with col1:
 
-        st.markdown("#### Target Hit")
-
         if target_net_profit >= 0:
-
-            st.success(
-                f" +{format_currency(target_net_profit)}"
+            target_class = "target-number"
+            target_text = (
+                f"+{format_currency(target_net_profit)}"
             )
-
         else:
-
-            st.error(
-                f" -{format_currency(abs(target_net_profit))}"
+            target_class = "stop-number"
+            target_text = (
+                f"-{format_currency(abs(target_net_profit))}"
             )
 
-        st.caption(
-            f"Sell at {format_currency(sell_price)}"
+        st.markdown(
+            f"""
+            <p class="result-title"> Target Hit</p>
+            <p class="{target_class}">{target_text}</p>
+            <p class="sell-price">
+                Sell at {format_currency(sell_price)}
+            </p>
+            """,
+            unsafe_allow_html=True
         )
 
 
+    # STOP
     with col2:
 
-        st.markdown("#### Stop Hit")
-
         if stop_net_result < 0:
-
-            st.error(
-                f" -{format_currency(abs(stop_net_result))}"
+            stop_class = "stop-number"
+            stop_text = (
+                f"-{format_currency(abs(stop_net_result))}"
             )
-
         else:
-
-            st.success(
-                f" +{format_currency(stop_net_result)}"
+            stop_class = "target-number"
+            stop_text = (
+                f"+{format_currency(stop_net_result)}"
             )
 
-        st.caption(
-            f"Sell at {format_currency(stop_price)}"
+        st.markdown(
+            f"""
+            <p class="result-title"> Stop Hit</p>
+            <p class="{stop_class}">{stop_text}</p>
+            <p class="sell-price">
+                Sell at {format_currency(stop_price)}
+            </p>
+            """,
+            unsafe_allow_html=True
         )
 
 
@@ -392,12 +448,9 @@ if st.button(
 
     st.divider()
 
-    with st.expander(
-        "Show Full Trade Details"
-    ):
+    with st.expander("Show Full Trade Details"):
 
         # BUY
-
         st.subheader("Buy")
 
         col1, col2, col3 = st.columns(3)
@@ -427,8 +480,7 @@ if st.button(
 
 
         # TARGET
-
-        st.subheader("🎯 Target Scenario")
+        st.subheader("Target Scenario")
 
         col1, col2, col3 = st.columns(3)
 
@@ -452,8 +504,7 @@ if st.button(
 
 
         # STOP
-
-        st.subheader("🛑 Stop Scenario")
+        st.subheader("Stop Scenario")
 
         col1, col2, col3 = st.columns(3)
 
@@ -477,7 +528,6 @@ if st.button(
 
 
         # OTHER
-
         st.subheader("Other")
 
         st.metric(
