@@ -663,9 +663,8 @@ st.title("Stock Profit Calculator")
 st.markdown("""
 <style>
 
-/* All main numbers */
-.shares-number,
-.detail-number {
+/* Number of shares */
+.shares-number {
     font-size: 30px;
     font-weight: 700;
     line-height: 1;
@@ -673,7 +672,7 @@ st.markdown("""
     padding: 0;
 }
 
-/* Target profit number */
+/* Profit */
 .target-number {
     color: #00c853;
     font-size: 30px;
@@ -683,7 +682,7 @@ st.markdown("""
     padding: 0;
 }
 
-/* Stop loss number */
+/* Loss */
 .stop-number {
     color: #ff4b4b;
     font-size: 30px;
@@ -693,10 +692,9 @@ st.markdown("""
     padding: 0;
 }
 
-/* All labels */
+/* Titles */
 .main-title,
-.result-title,
-.detail-title {
+.result-title {
     font-size: 17px;
     font-weight: 700;
     margin: 0 0 2px 0;
@@ -710,14 +708,6 @@ st.markdown("""
     margin-top: 4px;
 }
 
-/* Detail section headings */
-.detail-section {
-    font-size: 20px;
-    font-weight: 700;
-    margin-top: 18px;
-    margin-bottom: 12px;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -728,16 +718,6 @@ st.markdown("""
 
 def format_currency(value):
     return f"${value:,.2f}"
-
-
-def show_detail(title, value):
-    st.markdown(
-        f"""
-        <p class="detail-title">{title}</p>
-        <p class="detail-number">{value}</p>
-        """,
-        unsafe_allow_html=True
-    )
 
 
 # =================================================
@@ -776,7 +756,6 @@ investment_input = st.text_input(
 # =================================================
 
 try:
-
     purchase_price = (
         float(purchase_price_input)
         if purchase_price_input else 0.0
@@ -798,7 +777,6 @@ try:
     )
 
 except ValueError:
-
     st.error("Please enter valid numbers.")
     st.stop()
 
@@ -827,10 +805,7 @@ if st.button(
     use_container_width=True
 ):
 
-    # =================================================
-    # VALIDATION
-    # =================================================
-
+    # Validation
     if purchase_price <= 0:
         st.error("Buy price must be greater than 0.")
         st.stop()
@@ -864,16 +839,14 @@ if st.button(
         cash_budget - estimated_fee
     ) / purchase_price
 
-    # Whole shares only - round DOWN
-    num_shares = math.floor(
-        num_shares
-    )
+    # Whole shares only - always round DOWN
+    num_shares = math.floor(num_shares)
 
     buy_fee = transaction_fee(
         num_shares
     )
 
-    # Safety check
+    # Make sure shares + fee do not exceed budget
     while (
         num_shares > 0
         and (
@@ -881,16 +854,12 @@ if st.button(
             + buy_fee
         ) > cash_budget
     ):
-
         num_shares -= 1
-
-        buy_fee = transaction_fee(
-            num_shares
-        )
+        buy_fee = transaction_fee(num_shares)
 
 
     # =================================================
-    # BUY
+    # BUY COST
     # =================================================
 
     buy_value = (
@@ -899,10 +868,6 @@ if st.button(
 
     total_cash_used = (
         buy_value + buy_fee
-    )
-
-    cash_remaining = (
-        cash_budget - total_cash_used
     )
 
 
@@ -953,32 +918,7 @@ if st.button(
 
 
     # =================================================
-    # FEES
-    # =================================================
-
-    target_total_fees = (
-        buy_fee + target_sell_fee
-    )
-
-    stop_total_fees = (
-        buy_fee + stop_sell_fee
-    )
-
-
-    # =================================================
-    # BREAK EVEN
-    # =================================================
-
-    break_even_price = (
-        (total_cash_used + target_sell_fee)
-        / num_shares
-        if num_shares > 0
-        else 0
-    )
-
-
-    # =================================================
-    # MAIN RESULTS
+    # RESULTS
     # =================================================
 
     st.divider()
@@ -993,26 +933,21 @@ if st.button(
 
     st.divider()
 
-
-    # =================================================
-    # TARGET + STOP
-    # =================================================
-
     col1, col2 = st.columns(2)
 
 
+    # =================================================
     # TARGET
+    # =================================================
+
     with col1:
 
         if target_net_profit >= 0:
-
             target_class = "target-number"
             target_text = (
                 f"+{format_currency(target_net_profit)}"
             )
-
         else:
-
             target_class = "stop-number"
             target_text = (
                 f"-{format_currency(abs(target_net_profit))}"
@@ -1030,18 +965,18 @@ if st.button(
         )
 
 
+    # =================================================
     # STOP
+    # =================================================
+
     with col2:
 
         if stop_net_result < 0:
-
             stop_class = "stop-number"
             stop_text = (
                 f"-{format_currency(abs(stop_net_result))}"
             )
-
         else:
-
             stop_class = "target-number"
             stop_text = (
                 f"+{format_currency(stop_net_result)}"
@@ -1056,124 +991,4 @@ if st.button(
             </p>
             """,
             unsafe_allow_html=True
-        )
-
-
-    # =================================================
-    # FULL DETAILS
-    # =================================================
-
-    st.divider()
-
-    with st.expander("Show Full Trade Details"):
-
-        # =================================================
-        # BUY DETAILS
-        # =================================================
-
-        st.markdown(
-            '<p class="detail-section">Buy</p>',
-            unsafe_allow_html=True
-        )
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            show_detail(
-                "Cash Budget",
-                format_currency(cash_budget)
-            )
-
-        with col2:
-            show_detail(
-                "Stock Value",
-                format_currency(buy_value)
-            )
-
-        with col3:
-            show_detail(
-                "Buy Fee",
-                format_currency(buy_fee)
-            )
-
-        st.write("")
-
-        show_detail(
-            "Unused Cash",
-            format_currency(cash_remaining)
-        )
-
-
-        # =================================================
-        # TARGET DETAILS
-        # =================================================
-
-        st.markdown(
-            '<p class="detail-section">Target Scenario</p>',
-            unsafe_allow_html=True
-        )
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            show_detail(
-                "Target Price",
-                format_currency(sell_price)
-            )
-
-        with col2:
-            show_detail(
-                "Sell Value",
-                format_currency(target_sell_value)
-            )
-
-        with col3:
-            show_detail(
-                "Total Fees",
-                format_currency(target_total_fees)
-            )
-
-
-        # =================================================
-        # STOP DETAILS
-        # =================================================
-
-        st.markdown(
-            '<p class="detail-section">Stop Scenario</p>',
-            unsafe_allow_html=True
-        )
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            show_detail(
-                "Stop Price",
-                format_currency(stop_price)
-            )
-
-        with col2:
-            show_detail(
-                "Sell Value",
-                format_currency(stop_sell_value)
-            )
-
-        with col3:
-            show_detail(
-                "Total Fees",
-                format_currency(stop_total_fees)
-            )
-
-
-        # =================================================
-        # OTHER DETAILS
-        # =================================================
-
-        st.markdown(
-            '<p class="detail-section">Other</p>',
-            unsafe_allow_html=True
-        )
-
-        show_detail(
-            "Break Even Price",
-            format_currency(break_even_price)
         )
