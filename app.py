@@ -660,20 +660,18 @@ st.title("Stock Profit Calculator")
 # SESSION STATE
 # =================================================
 
-# Initialize inputs
-if "buy_price" not in st.session_state:
-    st.session_state.buy_price = ""
-
-if "target_price" not in st.session_state:
-    st.session_state.target_price = ""
+if "entry_price" not in st.session_state:
+    st.session_state.entry_price = ""
 
 if "stop_price" not in st.session_state:
     st.session_state.stop_price = ""
 
+if "target_price" not in st.session_state:
+    st.session_state.target_price = ""
+
 if "cash_budget" not in st.session_state:
     st.session_state.cash_budget = ""
 
-# Controls whether results are displayed
 if "show_results" not in st.session_state:
     st.session_state.show_results = False
 
@@ -683,9 +681,9 @@ if "show_results" not in st.session_state:
 # =================================================
 
 def clear_inputs():
-    st.session_state.buy_price = ""
-    st.session_state.target_price = ""
+    st.session_state.entry_price = ""
     st.session_state.stop_price = ""
+    st.session_state.target_price = ""
     st.session_state.cash_budget = ""
     st.session_state.show_results = False
 
@@ -775,23 +773,27 @@ def transaction_fee(shares):
 
 col1, col2, col3 = st.columns(3)
 
+# ENTRY
 with col1:
     st.text_input(
-        "Buy Price ($)",
-        key="buy_price"
+        "Entry ($)",
+        key="entry_price"
     )
 
+# STOP
 with col2:
     st.text_input(
-        "Target Price ($)",
+        "Stop ($)",
+        key="stop_price"
+    )
+
+# TARGET
+with col3:
+    st.text_input(
+        "Target ($)",
         key="target_price"
     )
 
-with col3:
-    st.text_input(
-        "Stop Price ($)",
-        key="stop_price"
-    )
 
 st.text_input(
     "Total Cash Budget ($)",
@@ -826,21 +828,22 @@ if calculate_clicked:
 
     # Convert inputs
     try:
-        purchase_price = (
-            float(st.session_state.buy_price)
-            if st.session_state.buy_price
-            else 0.0
-        )
 
-        sell_price = (
-            float(st.session_state.target_price)
-            if st.session_state.target_price
+        entry_price = (
+            float(st.session_state.entry_price)
+            if st.session_state.entry_price
             else 0.0
         )
 
         stop_price = (
             float(st.session_state.stop_price)
             if st.session_state.stop_price
+            else 0.0
+        )
+
+        target_price = (
+            float(st.session_state.target_price)
+            if st.session_state.target_price
             else 0.0
         )
 
@@ -859,16 +862,16 @@ if calculate_clicked:
     # VALIDATION
     # =================================================
 
-    if purchase_price <= 0:
-        st.error("Buy price must be greater than 0.")
-        st.stop()
-
-    if sell_price <= 0:
-        st.error("Target price must be greater than 0.")
+    if entry_price <= 0:
+        st.error("Entry price must be greater than 0.")
         st.stop()
 
     if stop_price <= 0:
         st.error("Stop price must be greater than 0.")
+        st.stop()
+
+    if target_price <= 0:
+        st.error("Target price must be greater than 0.")
         st.stop()
 
     if cash_budget <= 0:
@@ -881,7 +884,7 @@ if calculate_clicked:
     # =================================================
 
     estimated_shares = (
-        cash_budget / purchase_price
+        cash_budget / entry_price
     )
 
     estimated_fee = transaction_fee(
@@ -890,7 +893,7 @@ if calculate_clicked:
 
     num_shares = (
         cash_budget - estimated_fee
-    ) / purchase_price
+    ) / entry_price
 
     # Whole shares only - always round DOWN
     num_shares = math.floor(num_shares)
@@ -904,7 +907,7 @@ if calculate_clicked:
     while (
         num_shares > 0
         and (
-            num_shares * purchase_price
+            num_shares * entry_price
             + buy_fee
         ) > cash_budget
     ):
@@ -913,15 +916,15 @@ if calculate_clicked:
 
 
     # =================================================
-    # BUY COST
+    # ENTRY COST
     # =================================================
 
-    buy_value = (
-        num_shares * purchase_price
+    entry_value = (
+        num_shares * entry_price
     )
 
     total_cash_used = (
-        buy_value + buy_fee
+        entry_value + buy_fee
     )
 
 
@@ -930,7 +933,7 @@ if calculate_clicked:
     # =================================================
 
     target_sell_value = (
-        num_shares * sell_price
+        num_shares * target_price
     )
 
     target_sell_fee = transaction_fee(
@@ -976,10 +979,22 @@ if calculate_clicked:
     # =================================================
 
     st.session_state.num_shares = num_shares
-    st.session_state.target_net_profit = target_net_profit
-    st.session_state.stop_net_result = stop_net_result
-    st.session_state.sell_price_result = sell_price
-    st.session_state.stop_price_result = stop_price
+
+    st.session_state.target_net_profit = (
+        target_net_profit
+    )
+
+    st.session_state.stop_net_result = (
+        stop_net_result
+    )
+
+    st.session_state.target_price_result = (
+        target_price
+    )
+
+    st.session_state.stop_price_result = (
+        stop_price
+    )
 
     st.session_state.show_results = True
 
@@ -990,11 +1005,25 @@ if calculate_clicked:
 
 if st.session_state.show_results:
 
-    num_shares = st.session_state.num_shares
-    target_net_profit = st.session_state.target_net_profit
-    stop_net_result = st.session_state.stop_net_result
-    sell_price = st.session_state.sell_price_result
-    stop_price = st.session_state.stop_price_result
+    num_shares = (
+        st.session_state.num_shares
+    )
+
+    target_net_profit = (
+        st.session_state.target_net_profit
+    )
+
+    stop_net_result = (
+        st.session_state.stop_net_result
+    )
+
+    target_price = (
+        st.session_state.target_price_result
+    )
+
+    stop_price = (
+        st.session_state.stop_price_result
+    )
 
 
     # =================================================
@@ -1015,7 +1044,7 @@ if st.session_state.show_results:
 
 
     # =================================================
-    # TARGET + STOP
+    # TARGET + STOP RESULTS
     # =================================================
 
     col1, col2 = st.columns(2)
@@ -1045,7 +1074,7 @@ if st.session_state.show_results:
             <p class="result-title">Target Hit</p>
             <p class="{target_class}">{target_text}</p>
             <p class="sell-price">
-                Sell at {format_currency(sell_price)}
+                Sell at {format_currency(target_price)}
             </p>
             """,
             unsafe_allow_html=True
