@@ -346,7 +346,7 @@ if st.button(
 
     with col1:
 
-        st.markdown("#### TARGET HIT")
+        st.markdown("#### Target Hit")
 
         if target_net_profit >= 0:
 
@@ -367,7 +367,7 @@ if st.button(
 
     with col2:
 
-        st.markdown("#### STOP HIT")
+        st.markdown("#### Stop Hit")
 
         if stop_net_result < 0:
 
