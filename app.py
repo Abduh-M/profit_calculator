@@ -130,26 +130,22 @@ investment_input = st.text_input(
 try:
     purchase_price = (
         float(purchase_price_input)
-        if purchase_price_input
-        else 0.0
+        if purchase_price_input else 0.0
     )
 
     sell_price = (
         float(sell_price_input)
-        if sell_price_input
-        else 0.0
+        if sell_price_input else 0.0
     )
 
     stop_price = (
         float(stop_price_input)
-        if stop_price_input
-        else 0.0
+        if stop_price_input else 0.0
     )
 
     cash_budget = (
         float(investment_input)
-        if investment_input
-        else 0.0
+        if investment_input else 0.0
     )
 
 except ValueError:
@@ -181,9 +177,7 @@ if st.button(
     use_container_width=True
 ):
 
-    # ---------------------------------------------
-    # VALIDATION
-    # ---------------------------------------------
+    # Validation
 
     if purchase_price <= 0:
         st.error("Buy price must be greater than 0.")
@@ -203,7 +197,7 @@ if st.button(
 
 
     # =================================================
-    # NUMBER OF SHARES
+    # SHARES
     # =================================================
 
     estimated_shares = (
@@ -218,23 +212,23 @@ if st.button(
         cash_budget - estimated_fee
     ) / purchase_price
 
-    # Round DOWN to whole shares
+    # Whole shares only
     num_shares = math.floor(num_shares)
 
-    # Exact buy fee
     buy_fee = transaction_fee(
         num_shares
     )
 
-    # Safety check:
-    # make sure shares + fee do not exceed budget
+    # Safety check
     while (
         num_shares > 0
-        and (
+        and
+        (
             num_shares * purchase_price
             + buy_fee
         ) > cash_budget
     ):
+
         num_shares -= 1
 
         buy_fee = transaction_fee(
@@ -243,7 +237,7 @@ if st.button(
 
 
     # =================================================
-    # BUY SIDE
+    # BUY
     # =================================================
 
     buy_value = (
@@ -260,7 +254,7 @@ if st.button(
 
 
     # =================================================
-    # TARGET SCENARIO
+    # TARGET
     # =================================================
 
     target_sell_value = (
@@ -283,7 +277,7 @@ if st.button(
 
 
     # =================================================
-    # STOP SCENARIO
+    # STOP
     # =================================================
 
     stop_sell_value = (
@@ -306,7 +300,7 @@ if st.button(
 
 
     # =================================================
-    # ADDITIONAL CALCULATIONS
+    # FEES
     # =================================================
 
     target_total_fees = (
@@ -316,6 +310,11 @@ if st.button(
     stop_total_fees = (
         buy_fee + stop_sell_fee
     )
+
+
+    # =================================================
+    # BREAK EVEN
+    # =================================================
 
     break_even_price = (
         (total_cash_used + target_sell_fee)
@@ -340,117 +339,50 @@ if st.button(
 
 
     # =================================================
-    # TARGET + STOP RESULTS
+    # TARGET + STOP
     # =================================================
 
     col1, col2 = st.columns(2)
 
-
-    # ---------------------------------------------
-    # TARGET
-    # ---------------------------------------------
-
     with col1:
 
+        st.markdown("#### 🎯 TARGET HIT")
+
         if target_net_profit >= 0:
-            target_color = "#00c853"
-            target_amount = (
-                f"+{format_currency(target_net_profit)}"
+
+            st.success(
+                f"💰 +{format_currency(target_net_profit)}"
             )
+
         else:
-            target_color = "#ff4b4b"
-            target_amount = (
-                f"-{format_currency(abs(target_net_profit))}"
+
+            st.error(
+                f"💰 -{format_currency(abs(target_net_profit))}"
             )
 
-        st.markdown(
-            f"""
-<div style="margin:0; padding:0;">
-    <div style="
-        font-size:18px;
-        font-weight:700;
-        margin:0;
-        padding:0;
-        line-height:1.05;
-    ">
-        🎯 TARGET HIT
-    </div>
-
-    <div style="
-        color:{target_color};
-        font-size:32px;
-        font-weight:700;
-        margin:0;
-        padding:0;
-        line-height:1.05;
-    ">
-        {target_amount}
-    </div>
-
-    <div style="
-        font-size:13px;
-        opacity:0.7;
-        margin-top:3px;
-    ">
-        Sell at ${sell_price:,.2f}
-    </div>
-</div>
-            """,
-            unsafe_allow_html=True
+        st.caption(
+            f"Sell at {format_currency(sell_price)}"
         )
 
 
-    # ---------------------------------------------
-    # STOP
-    # ---------------------------------------------
-
     with col2:
 
+        st.markdown("#### 🛑 STOP HIT")
+
         if stop_net_result < 0:
-            stop_color = "#ff4b4b"
-            stop_amount = (
-                f"-{format_currency(abs(stop_net_result))}"
+
+            st.error(
+                f"💸 -{format_currency(abs(stop_net_result))}"
             )
+
         else:
-            stop_color = "#00c853"
-            stop_amount = (
-                f"+{format_currency(stop_net_result)}"
+
+            st.success(
+                f"💰 +{format_currency(stop_net_result)}"
             )
 
-        st.markdown(
-            f"""
-<div style="margin:0; padding:0;">
-    <div style="
-        font-size:18px;
-        font-weight:700;
-        margin:0;
-        padding:0;
-        line-height:1.05;
-    ">
-        🛑 STOP HIT
-    </div>
-
-    <div style="
-        color:{stop_color};
-        font-size:32px;
-        font-weight:700;
-        margin:0;
-        padding:0;
-        line-height:1.05;
-    ">
-        {stop_amount}
-    </div>
-
-    <div style="
-        font-size:13px;
-        opacity:0.7;
-        margin-top:3px;
-    ">
-        Sell at ${stop_price:,.2f}
-    </div>
-</div>
-            """,
-            unsafe_allow_html=True
+        st.caption(
+            f"Sell at {format_currency(stop_price)}"
         )
 
 
@@ -460,11 +392,11 @@ if st.button(
 
     st.divider()
 
-    with st.expander("Show Full Trade Details"):
+    with st.expander(
+        "Show Full Trade Details"
+    ):
 
-        # ---------------------------------------------
         # BUY
-        # ---------------------------------------------
 
         st.subheader("Buy")
 
@@ -494,9 +426,7 @@ if st.button(
         )
 
 
-        # ---------------------------------------------
         # TARGET
-        # ---------------------------------------------
 
         st.subheader("🎯 Target Scenario")
 
@@ -521,9 +451,7 @@ if st.button(
             )
 
 
-        # ---------------------------------------------
         # STOP
-        # ---------------------------------------------
 
         st.subheader("🛑 Stop Scenario")
 
@@ -548,9 +476,7 @@ if st.button(
             )
 
 
-        # ---------------------------------------------
         # OTHER
-        # ---------------------------------------------
 
         st.subheader("Other")
 
