@@ -331,7 +331,7 @@ if st.button(
     st.divider()
 
     st.metric(
-        "📦 SHARES YOU CAN BUY",
+        " SHARES YOU CAN BUY",
         f"{num_shares:,}"
     )
 
@@ -351,13 +351,13 @@ if st.button(
         if target_net_profit >= 0:
 
             st.success(
-                f"💰 +{format_currency(target_net_profit)}"
+                f" +{format_currency(target_net_profit)}"
             )
 
         else:
 
             st.error(
-                f"💰 -{format_currency(abs(target_net_profit))}"
+                f" -{format_currency(abs(target_net_profit))}"
             )
 
         st.caption(
@@ -372,13 +372,13 @@ if st.button(
         if stop_net_result < 0:
 
             st.error(
-                f"💸 -{format_currency(abs(stop_net_result))}"
+                f" -{format_currency(abs(stop_net_result))}"
             )
 
         else:
 
             st.success(
-                f"💰 +{format_currency(stop_net_result)}"
+                f" +{format_currency(stop_net_result)}"
             )
 
         st.caption(
