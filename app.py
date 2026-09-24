@@ -74,6 +74,7 @@
 
 
 import streamlit as st
+import math
 
 st.set_page_config(
     page_title="Stock Profit Calculator",
@@ -89,10 +90,6 @@ st.title("📈 Stock Profit Calculator")
 
 def format_currency(value):
     return f"${value:,.2f}"
-
-
-def format_number(value):
-    return f"{value:,.4f}".rstrip("0").rstrip(".")
 
 
 # =================================================
@@ -172,8 +169,6 @@ if st.button(
     use_container_width=True
 ):
 
-    # Validate inputs
-
     if purchase_price <= 0:
         st.error("Buy price must be greater than 0.")
         st.stop()
@@ -192,23 +187,30 @@ if st.button(
     # =================================================
 
     # First estimate
-    num_shares = cash_budget / purchase_price
+    estimated_shares = cash_budget / purchase_price
 
     # Estimate buy fee
-    buy_fee = transaction_fee(num_shares)
+    estimated_fee = transaction_fee(estimated_shares)
 
-    # Recalculate shares so fee stays inside budget
+    # Calculate affordable shares
     num_shares = (
-        cash_budget - buy_fee
+        cash_budget - estimated_fee
     ) / purchase_price
 
-    # Recalculate exact fee
+    # ROUND DOWN TO WHOLE SHARES
+    num_shares = math.floor(num_shares)
+
+    # Calculate exact buy fee
     buy_fee = transaction_fee(num_shares)
 
-    # Final shares
-    num_shares = (
-        cash_budget - buy_fee
-    ) / purchase_price
+    # Safety check in case fee changes after rounding
+    while (
+        num_shares * purchase_price + buy_fee
+        > cash_budget
+        and num_shares > 0
+    ):
+        num_shares -= 1
+        buy_fee = transaction_fee(num_shares)
 
 
     # =================================================
@@ -221,6 +223,10 @@ if st.button(
 
     total_cash_used = (
         buy_value + buy_fee
+    )
+
+    cash_remaining = (
+        cash_budget - total_cash_used
     )
 
 
@@ -255,12 +261,6 @@ if st.button(
         cash_after_sale - total_cash_used
     )
 
-    profit_percent = (
-        net_profit / total_cash_used * 100
-        if total_cash_used > 0
-        else 0
-    )
-
     break_even_price = (
         (total_cash_used + sell_fee)
         / num_shares
@@ -270,7 +270,7 @@ if st.button(
 
 
     # =================================================
-    # MAIN RESULTS FIRST
+    # MAIN RESULTS
     # =================================================
 
     st.divider()
@@ -280,23 +280,47 @@ if st.button(
     with col1:
         st.metric(
             "📦 SHARES YOU CAN BUY",
-            format_number(num_shares)
+            f"{num_shares:,}"
         )
 
     with col2:
 
-        if net_profit >= 0:
-            st.metric(
-                "💰 NET PROFIT",
-                format_currency(net_profit),
-                f"{profit_percent:.2f}%"
+        if net_profit > 0:
+            st.markdown("**💰 NET PROFIT**")
+            st.markdown(
+                f"""
+                <div style="
+                    color:#00c853;
+                    font-size:36px;
+                    font-weight:700;
+                    margin-top:-8px;
+                ">
+                    {format_currency(net_profit)}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        elif net_profit < 0:
+            st.markdown("**💰 NET LOSS**")
+            st.markdown(
+                f"""
+                <div style="
+                    color:#ff4b4b;
+                    font-size:36px;
+                    font-weight:700;
+                    margin-top:-8px;
+                ">
+                    -{format_currency(abs(net_profit))}
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
         else:
             st.metric(
-                "💰 NET LOSS",
-                f"-{format_currency(abs(net_profit))}",
-                f"{profit_percent:.2f}%"
+                "💰 NET PROFIT",
+                "$0.00"
             )
 
 
@@ -329,6 +353,11 @@ if st.button(
                 "Buy Fee",
                 format_currency(buy_fee)
             )
+
+        st.metric(
+            "Unused Cash",
+            format_currency(cash_remaining)
+        )
 
 
         st.subheader("Sell")
