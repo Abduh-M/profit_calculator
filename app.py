@@ -81,7 +81,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("📈 Stock Profit Calculator")
+st.title("Stock Profit Calculator")
 
 
 # =================================================
@@ -90,6 +90,15 @@ st.title("📈 Stock Profit Calculator")
 
 st.markdown("""
 <style>
+
+/* Number of shares */
+.shares-number {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
 
 /* Target profit number */
 .target-number {
@@ -111,7 +120,8 @@ st.markdown("""
     padding: 0;
 }
 
-/* Result heading */
+/* Main result headings */
+.main-title,
 .result-title {
     font-size: 17px;
     font-weight: 700;
@@ -174,6 +184,7 @@ investment_input = st.text_input(
 # =================================================
 
 try:
+
     purchase_price = (
         float(purchase_price_input)
         if purchase_price_input else 0.0
@@ -195,6 +206,7 @@ try:
     )
 
 except ValueError:
+
     st.error("Please enter valid numbers.")
     st.stop()
 
@@ -208,6 +220,7 @@ MIN_FEE = 1.00
 
 
 def transaction_fee(shares):
+
     return max(
         MIN_FEE,
         shares * COST_PER_SHARE
@@ -223,27 +236,37 @@ if st.button(
     use_container_width=True
 ):
 
-    # Validation
+    # =================================================
+    # VALIDATION
+    # =================================================
 
     if purchase_price <= 0:
-        st.error("Buy price must be greater than 0.")
+        st.error(
+            "Buy price must be greater than 0."
+        )
         st.stop()
 
     if sell_price <= 0:
-        st.error("Target price must be greater than 0.")
+        st.error(
+            "Target price must be greater than 0."
+        )
         st.stop()
 
     if stop_price <= 0:
-        st.error("Stop price must be greater than 0.")
+        st.error(
+            "Stop price must be greater than 0."
+        )
         st.stop()
 
     if cash_budget <= 0:
-        st.error("Cash budget must be greater than 0.")
+        st.error(
+            "Cash budget must be greater than 0."
+        )
         st.stop()
 
 
     # =================================================
-    # SHARES
+    # NUMBER OF SHARES
     # =================================================
 
     estimated_shares = (
@@ -258,14 +281,19 @@ if st.button(
         cash_budget - estimated_fee
     ) / purchase_price
 
-    # Whole shares only - always round DOWN
-    num_shares = math.floor(num_shares)
+    # Whole shares only
+    # Always round DOWN
+    num_shares = math.floor(
+        num_shares
+    )
 
     buy_fee = transaction_fee(
         num_shares
     )
 
-    # Safety check
+    # Safety check:
+    # Make sure shares + fee
+    # never exceed cash budget
     while (
         num_shares > 0
         and (
@@ -286,24 +314,28 @@ if st.button(
     # =================================================
 
     buy_value = (
-        num_shares * purchase_price
+        num_shares
+        * purchase_price
     )
 
     total_cash_used = (
-        buy_value + buy_fee
+        buy_value
+        + buy_fee
     )
 
     cash_remaining = (
-        cash_budget - total_cash_used
+        cash_budget
+        - total_cash_used
     )
 
 
     # =================================================
-    # TARGET
+    # TARGET SCENARIO
     # =================================================
 
     target_sell_value = (
-        num_shares * sell_price
+        num_shares
+        * sell_price
     )
 
     target_sell_fee = transaction_fee(
@@ -322,11 +354,12 @@ if st.button(
 
 
     # =================================================
-    # STOP
+    # STOP SCENARIO
     # =================================================
 
     stop_sell_value = (
-        num_shares * stop_price
+        num_shares
+        * stop_price
     )
 
     stop_sell_fee = transaction_fee(
@@ -349,11 +382,13 @@ if st.button(
     # =================================================
 
     target_total_fees = (
-        buy_fee + target_sell_fee
+        buy_fee
+        + target_sell_fee
     )
 
     stop_total_fees = (
-        buy_fee + stop_sell_fee
+        buy_fee
+        + stop_sell_fee
     )
 
 
@@ -362,9 +397,14 @@ if st.button(
     # =================================================
 
     break_even_price = (
-        (total_cash_used + target_sell_fee)
+        (
+            total_cash_used
+            + target_sell_fee
+        )
         / num_shares
+
         if num_shares > 0
+
         else 0
     )
 
@@ -375,9 +415,12 @@ if st.button(
 
     st.divider()
 
-    st.metric(
-        "Number of Shares",
-        f"{num_shares:,}"
+    st.markdown(
+        f"""
+        <p class="main-title">Number of Shares</p>
+        <p class="shares-number">{num_shares:,}</p>
+        """,
+        unsafe_allow_html=True
     )
 
     st.divider()
@@ -390,23 +433,31 @@ if st.button(
     col1, col2 = st.columns(2)
 
 
+    # =================================================
     # TARGET
+    # =================================================
+
     with col1:
 
         if target_net_profit >= 0:
+
             target_class = "target-number"
+
             target_text = (
                 f"+{format_currency(target_net_profit)}"
             )
+
         else:
+
             target_class = "stop-number"
+
             target_text = (
                 f"-{format_currency(abs(target_net_profit))}"
             )
 
         st.markdown(
             f"""
-            <p class="result-title"> Target Hit</p>
+            <p class="result-title">Target Hit</p>
             <p class="{target_class}">{target_text}</p>
             <p class="sell-price">
                 Sell at {format_currency(sell_price)}
@@ -416,23 +467,31 @@ if st.button(
         )
 
 
+    # =================================================
     # STOP
+    # =================================================
+
     with col2:
 
         if stop_net_result < 0:
+
             stop_class = "stop-number"
+
             stop_text = (
                 f"-{format_currency(abs(stop_net_result))}"
             )
+
         else:
+
             stop_class = "target-number"
+
             stop_text = (
                 f"+{format_currency(stop_net_result)}"
             )
 
         st.markdown(
             f"""
-            <p class="result-title"> Stop Hit</p>
+            <p class="result-title">Stop Hit</p>
             <p class="{stop_class}">{stop_text}</p>
             <p class="sell-price">
                 Sell at {format_currency(stop_price)}
@@ -448,89 +507,138 @@ if st.button(
 
     st.divider()
 
-    with st.expander("Show Full Trade Details"):
+    with st.expander(
+        "Show Full Trade Details"
+    ):
 
-        # BUY
+        # =================================================
+        # BUY DETAILS
+        # =================================================
+
         st.subheader("Buy")
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
+
             st.metric(
                 "Cash Budget",
-                format_currency(cash_budget)
+                format_currency(
+                    cash_budget
+                )
             )
 
         with col2:
+
             st.metric(
                 "Stock Value",
-                format_currency(buy_value)
+                format_currency(
+                    buy_value
+                )
             )
 
         with col3:
+
             st.metric(
                 "Buy Fee",
-                format_currency(buy_fee)
+                format_currency(
+                    buy_fee
+                )
             )
 
         st.metric(
             "Unused Cash",
-            format_currency(cash_remaining)
+            format_currency(
+                cash_remaining
+            )
         )
 
 
-        # TARGET
-        st.subheader("Target Scenario")
+        # =================================================
+        # TARGET DETAILS
+        # =================================================
+
+        st.subheader(
+            "Target Scenario"
+        )
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
+
             st.metric(
                 "Target Price",
-                format_currency(sell_price)
+                format_currency(
+                    sell_price
+                )
             )
 
         with col2:
+
             st.metric(
                 "Sell Value",
-                format_currency(target_sell_value)
+                format_currency(
+                    target_sell_value
+                )
             )
 
         with col3:
+
             st.metric(
                 "Total Fees",
-                format_currency(target_total_fees)
+                format_currency(
+                    target_total_fees
+                )
             )
 
 
-        # STOP
-        st.subheader("Stop Scenario")
+        # =================================================
+        # STOP DETAILS
+        # =================================================
+
+        st.subheader(
+            "Stop Scenario"
+        )
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
+
             st.metric(
                 "Stop Price",
-                format_currency(stop_price)
+                format_currency(
+                    stop_price
+                )
             )
 
         with col2:
+
             st.metric(
                 "Sell Value",
-                format_currency(stop_sell_value)
+                format_currency(
+                    stop_sell_value
+                )
             )
 
         with col3:
+
             st.metric(
                 "Total Fees",
-                format_currency(stop_total_fees)
+                format_currency(
+                    stop_total_fees
+                )
             )
 
 
-        # OTHER
+        # =================================================
+        # OTHER DETAILS
+        # =================================================
+
         st.subheader("Other")
 
         st.metric(
             "Break Even Price",
-            format_currency(break_even_price)
+            format_currency(
+                break_even_price
+            )
         )
