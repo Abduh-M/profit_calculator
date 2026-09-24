@@ -328,90 +328,104 @@ if st.button(
 
     st.divider()
 
-    # =================================================
-    # PROFIT / LOSS
-    # =================================================
+# =================================================
+# PROFIT / LOSS
+# =================================================
 
-    col1, col2 = st.columns(2)
+col1, col2 = st.columns(2)
 
-    # TARGET
-    with col1:
+# TARGET
+with col1:
 
-        st.markdown("### 🎯 TARGET HIT")
+    if target_net_profit >= 0:
+        target_color = "#00c853"
+        target_amount = f"+{format_currency(target_net_profit)}"
+    else:
+        target_color = "#ff4b4b"
+        target_amount = f"-{format_currency(abs(target_net_profit))}"
 
-        if target_net_profit >= 0:
+    st.markdown(
+        f"""
+        <div style="margin:0; padding:0;">
+            <div style="
+                font-size:18px;
+                font-weight:700;
+                margin:0;
+                padding:0;
+                line-height:1.1;
+            ">
+                🎯 TARGET HIT
+            </div>
 
-            st.markdown(
-                f"""
-                <div style="
-                    color:#00c853;
-                    font-size:38px;
-                    font-weight:700;
-                ">
-                    +{format_currency(target_net_profit)}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            <div style="
+                color:{target_color};
+                font-size:32px;
+                font-weight:700;
+                margin:2px 0 0 0;
+                padding:0;
+                line-height:1.1;
+            ">
+                {target_amount}
+            </div>
 
-        else:
-
-            st.markdown(
-                f"""
-                <div style="
-                    color:#ff4b4b;
-                    font-size:38px;
-                    font-weight:700;
-                ">
-                    -{format_currency(abs(target_net_profit))}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        st.caption(
-            f"Sell at ${sell_price:,.2f}"
-        )
+            <div style="
+                font-size:13px;
+                opacity:0.7;
+                margin-top:4px;
+            ">
+                Sell at ${sell_price:,.2f}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
-    # STOP
-    with col2:
+# STOP
+with col2:
 
-        st.markdown("### 🛑 STOP HIT")
+    if stop_net_result < 0:
+        stop_color = "#ff4b4b"
+        stop_amount = f"-{format_currency(abs(stop_net_result))}"
+    else:
+        stop_color = "#00c853"
+        stop_amount = f"+{format_currency(stop_net_result)}"
 
-        if stop_net_result < 0:
+    st.markdown(
+        f"""
+        <div style="margin:0; padding:0;">
+            <div style="
+                font-size:18px;
+                font-weight:700;
+                margin:0;
+                padding:0;
+                line-height:1.1;
+            ">
+                🛑 STOP HIT
+            </div>
 
-            st.markdown(
-                f"""
-                <div style="
-                    color:#ff4b4b;
-                    font-size:38px;
-                    font-weight:700;
-                ">
-                    -{format_currency(abs(stop_net_result))}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            <div style="
+                color:{stop_color};
+                font-size:32px;
+                font-weight:700;
+                margin:2px 0 0 0;
+                padding:0;
+                line-height:1.1;
+            ">
+                {stop_amount}
+            </div>
 
-        else:
-
-            st.markdown(
-                f"""
-                <div style="
-                    color:#00c853;
-                    font-size:38px;
-                    font-weight:700;
-                ">
-                    +{format_currency(stop_net_result)}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        st.caption(
-            f"Sell at ${stop_price:,.2f}"
-        )
+            <div style="
+                font-size:13px;
+                opacity:0.7;
+                margin-top:4px;
+            ">
+                Sell at ${stop_price:,.2f}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
     # =================================================
