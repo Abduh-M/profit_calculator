@@ -1210,38 +1210,26 @@ if calculate_clicked:
 
 
     # =================================================
-    # ENTRY COST
+    # FEES
     # =================================================
 
-    entry_value = (
-        num_shares * entry_price
-    )
+    buy_fee = transaction_fee(num_shares)
+    sell_fee = transaction_fee(num_shares)
 
-    total_cash_used = (
-        entry_value + buy_fee
-    )
+    total_fees = buy_fee + sell_fee
 
 
     # =================================================
     # TARGET SCENARIO
     # =================================================
 
-    target_sell_value = (
-        num_shares * target_price
-    )
-
-    target_sell_fee = transaction_fee(
-        num_shares
-    )
-
-    target_cash_after_sale = (
-        target_sell_value
-        - target_sell_fee
-    )
+    target_gross_profit = (
+        target_price - entry_price
+    ) * num_shares
 
     target_net_profit = (
-        target_cash_after_sale
-        - total_cash_used
+        target_gross_profit
+        - total_fees
     )
 
 
@@ -1249,22 +1237,13 @@ if calculate_clicked:
     # STOP SCENARIO
     # =================================================
 
-    stop_sell_value = (
-        num_shares * stop_price
-    )
-
-    stop_sell_fee = transaction_fee(
-        num_shares
-    )
-
-    stop_cash_after_sale = (
-        stop_sell_value
-        - stop_sell_fee
-    )
+    stop_gross_result = (
+        stop_price - entry_price
+    ) * num_shares
 
     stop_net_result = (
-        stop_cash_after_sale
-        - total_cash_used
+        stop_gross_result
+        - total_fees
     )
 
 
