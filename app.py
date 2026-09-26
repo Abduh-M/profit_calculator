@@ -634,8 +634,8 @@ with col1:
         "Entry ($)",
         min_value=0.0,
         value=None,
-        step=0.0001,
-        format="%.4f",
+        step=0.01,
+        format="%.2f",
         key="entry_price",
         
     )
@@ -647,8 +647,8 @@ with col2:
         "Stop ($)",
         min_value=0.0,
         value=None,
-        step=0.0001,
-        format="%.4f",
+        step=0.01,
+        format="%.2f",
         key="stop_price",
         
     )
@@ -660,8 +660,8 @@ with col3:
         "Target ($)",
         min_value=0.0,
         value=None,
-        step=0.0001,
-        format="%.4f",
+        step=0.01,
+        format="%.2f",
         key="target_price",
         
     )
@@ -925,7 +925,7 @@ if st.session_state.show_results:
             <p class="result-title">Target Hit</p>
             <p class="{target_class}">{target_text}</p>
             <p class="sell-price">
-                Sell at {target_price:.4f}
+                Sell at {target_price:.2f}
             </p>
             """,
             unsafe_allow_html=True
