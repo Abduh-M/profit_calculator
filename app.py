@@ -956,7 +956,7 @@ if st.session_state.show_results:
             <p class="result-title">Stop Hit</p>
             <p class="{stop_class}">{stop_text}</p>
             <p class="sell-price">
-                Sell at {stop_price:.4f}
+                Sell at {stop_price:.2f}
             </p>
             """,
             unsafe_allow_html=True
