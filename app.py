@@ -637,7 +637,7 @@ with col1:
         step=0.0001,
         format="%.4f",
         key="entry_price",
-        placeholder="0.0000"
+        
     )
 
 
@@ -650,7 +650,7 @@ with col2:
         step=0.0001,
         format="%.4f",
         key="stop_price",
-        placeholder="0.0000"
+        
     )
 
 
@@ -663,7 +663,7 @@ with col3:
         step=0.0001,
         format="%.4f",
         key="target_price",
-        placeholder="0.0000"
+        
     )
 
 
@@ -675,7 +675,7 @@ st.number_input(
     step=1.00,
     format="%.2f",
     key="cash_budget",
-    placeholder="0.00",
+   
     help="Maximum cash you want to use, including the buy fee."
 )
 
